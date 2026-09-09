@@ -1093,12 +1093,13 @@ body.m-tip #tipSheet { display: block; }
   80%  { transform: translateY(-3px) rotate(0); }
   100% { transform: translateY(0); }
 }
-.dog-tail { transform-origin: 36px 28px; animation: dog-wag 1.5s ease-in-out infinite; }
-@keyframes dog-wag { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(24deg); } }
-.dog-eye { animation: dog-blink 4.2s infinite; }
-@keyframes dog-blink { 0%, 91%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.12); } }
-.dog-ear-tip { animation: dog-glow 2.2s ease-in-out infinite; }
-@keyframes dog-glow { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.dog-eye { animation: dog-eye-glow 2.4s ease-in-out infinite; }
+@keyframes dog-eye-glow {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 3px #25F4EE); }
+  50% { opacity: .5; filter: none; }
+}
+.fp-dog.talk .dog-svg { animation: dog-talk-bounce .5s ease; }
+@keyframes dog-talk-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .dog-bubble {
   position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
   min-width: 150px; max-width: 220px; padding: 9px 12px;
@@ -1125,6 +1126,54 @@ body.m-tip #tipSheet { display: block; }
 }
 @keyframes confetti-fall {
   to { transform: translateY(108vh) rotate(560deg); }
+}
+
+/* ===== 计算页顶部整体深色化（header 深色渐变卡 + 吸顶摘要条深色玻璃） ===== */
+@media (max-width: 760px) {
+  body.m-result header {
+    background: linear-gradient(150deg, #0F2340 0%, #16406B 55%, #1E5C8C 100%);
+    border-radius: 16px; padding: 14px 16px;
+    margin-bottom: 12px; position: relative; overflow: hidden;
+    box-shadow: 0 14px 30px -18px rgba(15, 35, 64, .6);
+  }
+  body.m-result header::before {
+    content: ''; position: absolute; right: -40px; top: -50px;
+    width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(37, 244, 238, .2), transparent 70%);
+  }
+  body.m-result header::after {
+    content: ''; position: absolute; left: -30px; bottom: -60px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(254, 44, 85, .16), transparent 70%);
+  }
+  body.m-result .subtitle {
+    color: rgba(255, 255, 255, .78);
+    margin: 8px 0 0; position: relative; font-size: 12.5px;
+  }
+  body.m-result .rb-title {
+    background: linear-gradient(90deg, #FFFFFF 30%, #7FE9FF);
+    -webkit-background-clip: text; background-clip: text;
+  }
+  body.m-result .rb-tag { color: rgba(255, 255, 255, .5); }
+  body.m-result .hdr-accent { margin-bottom: 0; }
+
+  /* 吸顶摘要条：深色玻璃，与计算页头部呼应 */
+  body.m-result #chipBar {
+    background: linear-gradient(135deg, rgba(15, 35, 64, .97), rgba(23, 69, 110, .95));
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    box-shadow: 0 12px 26px -16px rgba(15, 35, 64, .7);
+  }
+  body.m-result .chip-btn {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: none;
+  }
+  body.m-result .chip b { color: rgba(255, 255, 255, .55); }
+  body.m-result .chip i { color: #fff; }
+  body.m-result .chip-btn::after {
+    content: '修改 ›'; flex: none; font-size: 11px; font-weight: 700;
+    color: #7FE9FF; margin-left: 2px;
+  }
 }
 
 </style>
@@ -1525,23 +1574,28 @@ body.m-tip #tipSheet { display: block; }
   <div class="fp-dog" id="fpDog" role="button" tabindex="0" aria-label="AI 助手机器狗，点击互动">
     <svg class="dog-svg" viewBox="0 0 48 48" aria-hidden="true">
       <!-- 身体 -->
-      <rect x="10" y="26" width="26" height="12" rx="6" fill="#EDF2F7"/>
-      <rect x="13" y="37" width="5" height="6" rx="2.2" fill="#C9D4E0"/>
-      <rect x="28" y="37" width="5" height="6" rx="2.2" fill="#C9D4E0"/>
-      <!-- 尾巴 -->
-      <path class="dog-tail" d="M36 28 q7 -2 6 -9" stroke="#EDF2F7" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <!-- 头 -->
-      <rect x="24" y="12" width="17" height="14" rx="6" fill="#F7FAFD"/>
-      <!-- 耳朵（天线） -->
-      <path class="dog-ear" d="M27 12 v-5" stroke="#4D7CFE" stroke-width="3" stroke-linecap="round"/>
-      <circle class="dog-ear-tip" cx="27" cy="5.5" r="2.4" fill="#25F4EE"/>
-      <!-- 眼睛 -->
-      <circle class="dog-eye" cx="31" cy="18" r="2.1" fill="#16283E"/>
-      <circle class="dog-eye dog-eye2" cx="37.5" cy="18" r="2.1" fill="#16283E"/>
-      <!-- 鼻/嘴 -->
-      <rect x="33" y="22.5" width="4.5" height="2.2" rx="1.1" fill="#FE2C55"/>
-      <!-- 胸前logo点 -->
-      <circle cx="18" cy="32" r="2.2" fill="#25F4EE"/>
+      <rect x="15" y="32" width="18" height="9" rx="4.5" fill="#F7FAFD"/>
+      <rect x="18" y="40" width="4.5" height="4.5" rx="2" fill="#C9D4E0"/>
+      <rect x="25.5" y="40" width="4.5" height="4.5" rx="2" fill="#C9D4E0"/>
+      <circle cx="24" cy="36.5" r="1.8" fill="#25F4EE"/>
+      <!-- 猫耳 -->
+      <path d="M12 13 L15 3.5 L21.5 9.5 Z" fill="#F7FAFD"/>
+      <path d="M36 13 L33 3.5 L26.5 9.5 Z" fill="#F7FAFD"/>
+      <path d="M13.8 10.5 L15.6 6 L18.6 9 Z" fill="#25F4EE" opacity=".8"/>
+      <path d="M34.2 10.5 L32.4 6 L29.4 9 Z" fill="#25F4EE" opacity=".8"/>
+      <!-- 头（大圆角） -->
+      <rect x="9" y="8" width="30" height="24" rx="12" fill="#F7FAFD"/>
+      <!-- 侧耳机 -->
+      <rect x="6" y="17" width="4.5" height="9" rx="2.2" fill="#4D7CFE"/>
+      <rect x="37.5" y="17" width="4.5" height="9" rx="2.2" fill="#4D7CFE"/>
+      <!-- 发光面罩 -->
+      <rect x="13" y="15" width="22" height="9.5" rx="4.75" fill="#16283E"/>
+      <rect x="13" y="15" width="22" height="4" rx="2" fill="#2A4A73" opacity=".6"/>
+      <!-- 面罩内发光眼睛 -->
+      <circle class="dog-eye" cx="20" cy="19.8" r="2" fill="#25F4EE"/>
+      <circle class="dog-eye dog-eye2" cx="28" cy="19.8" r="2" fill="#25F4EE"/>
+      <!-- 嘴 -->
+      <path class="dog-mouth" d="M22 25 q2 1.6 4 0" stroke="#9AA9BC" stroke-width="1.4" fill="none" stroke-linecap="round"/>
     </svg>
     <span class="dog-bubble" id="dogBubble" hidden></span>
   </div>
@@ -2358,7 +2412,27 @@ function setView(v) {
   /* 填写视图（首屏 / 修改订单）统一默认收起「配置项」，两处交互完全一致 */
   if (v === 'm-fill') document.body.classList.add('cfg-collapsed');
   syncCfgAria();
-  if (isMobile()) { try { window.scrollTo(0, 0); } catch (e) {} }
+  if (!isMobile()) return;
+  if (v === 'm-result') {
+    /* 进入计算页：
+       ① 填写阶段已算出盈利但还没放过彩带 → 进入后立即补一次庆祝；
+       ② 页面滚到【利润计算结果】横幅（不回到页面最顶） */
+    if (window.__profitState === 'win' && !window.__confettiDone) {
+      window.__confettiDone = true;
+      setTimeout(launchConfetti, 280);
+    }
+    const hero = document.querySelector('.result-hero');
+    if (hero && hero.scrollIntoView) {
+      requestAnimationFrame(() => {
+        try { hero.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (e) { try { hero.scrollIntoView(); } catch (e2) { try { window.scrollTo(0, 0); } catch (e3) {} } }
+      });
+    } else {
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+  } else {
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
 }
 /* 「修改订单数据」不再单独下拉一层：直接回到与首屏一致的填写视图 */
 function openEdit() { setView('m-fill'); }
@@ -3140,14 +3214,19 @@ function render() {
   if (price <= 0) fp.classList.add('zero');
   else if (R.profitLocal < -0.005) fp.classList.add('negative');
 
-  /* 利润状态追踪：由亏转赚 → 彩带庆祝；转亏 → 机器狗提醒调价（每次状态变化只触发一次） */
+  /* 利润状态追踪：状态一变 → 机器狗立即跳出说话；由亏/零转赚 → 彩带庆祝（每次盈利只放一次） */
   window.__lastProfit = R.profitCny;
   const pState = price <= 0 ? 'zero'
     : (R.profitLocal > 0.005 ? 'win' : (R.profitLocal < -0.005 ? 'lose' : 'zero'));
   if (pState !== window.__profitState) {
-    if (pState === 'win' && document.body.classList.contains('m-result') &&
-        !document.body.classList.contains('m-edit')) launchConfetti();
-    if (pState === 'lose' && window.__dogSay) {
+    window.__confettiDone = false;                     // 新一轮盈利允许再次庆祝
+    if (pState === 'win') {
+      if (document.body.classList.contains('m-result') && !window.__confettiDone) {
+        window.__confettiDone = true;
+        launchConfetti();
+      }
+      if (window.__dogSay) window.__dogSay('汪！算出来是赚的，这单稳了 🎉');
+    } else if (pState === 'lose' && window.__dogSay) {
       window.__dogSay('汪…目前是亏损的，建议调高售价或压缩成本！');
     }
     window.__profitState = pState;
@@ -3675,11 +3754,11 @@ function bind() {
     const dogSay = (txt) => {
       dogBubble.textContent = txt;
       dogBubble.hidden = false;
-      dog.classList.remove('hop');
+      dog.classList.remove('hop', 'talk');
       void dog.offsetWidth;                       // 强制重排以重启动画
-      dog.classList.add('hop');
+      dog.classList.add('hop', 'talk');
       clearTimeout(dogT);
-      dogT = setTimeout(() => { dogBubble.hidden = true; dog.classList.remove('hop'); }, 3400);
+      dogT = setTimeout(() => { dogBubble.hidden = true; dog.classList.remove('hop', 'talk'); }, 3400);
     };
     window.__dogSay = dogSay;                     // 供「转亏提醒」调用
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
