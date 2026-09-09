@@ -640,7 +640,11 @@ body.m-tip #tipSheet { display: block; }
 .tip-panel .tip-text {
   margin: 0; padding: 2px 2px 10px;
   font-size: 13.5px; line-height: 1.75; color: var(--ink-2);
+  white-space: pre-line;   /* 支持文案中的 \n 换行 */
 }
+/* 站点面板：正式环境下未上线站点（灰化 + 「开发中」红标） */
+.region-opt.wip { opacity: .55; }
+.region-opt.wip .ro-sub b { color: #C2410C; font-weight: 700; }
 .tip-panel .tip-src {
   margin: 0; padding: 8px 10px;
   font-size: 11.5px; color: var(--ink-3);
@@ -1981,11 +1985,11 @@ const SEA_SITES = {
         ],
         cats: CAT_TREE,
         comm: { def: 0.14, cat: {} },   // 越南：非Mall 默认 14%（官方），类目浮动请自行确认
-        shipping: { zones: [
-          { name: 'Zone A', firstG: 10, firstPrice: 10900, addPrice: 900,  buyerPays: 15000 },
-          { name: 'Zone B', firstG: 10, firstPrice: 10900, addPrice: 900,  buyerPays: 17000 },
-          { name: 'Zone C', firstG: 10, firstPrice: 10900, addPrice: 900,  buyerPays: 17000 },
-          { name: 'Zone D', firstG: 10, firstPrice: 10900, addPrice: 900,  buyerPays: 30000 },
+        shipping: { zones: [   // 2026-09-10 按《东南亚跨境物流运费价格表》价卡校准（300g→₫27000 验证吻合）
+          { name: 'Zone A', firstG: 10, firstPrice: 900, addPrice: 900,  buyerPays: 15000 },
+          { name: 'Zone B', firstG: 10, firstPrice: 900, addPrice: 900,  buyerPays: 17000 },
+          { name: 'Zone C', firstG: 10, firstPrice: 900, addPrice: 900,  buyerPays: 17000 },
+          { name: 'Zone D', firstG: 10, firstPrice: 900, addPrice: 900,  buyerPays: 30000 },
         ] } },
 
   TH: { name: '泰国', cnyName: '泰铢', currency: 'THB', symbol: '฿', fxToCNY: 0.22,
@@ -2064,9 +2068,9 @@ const SEA_SITES = {
         ],
         cats: CAT_TREE,
         comm: { def: 0.068, cat: {} },   // 菲律宾：类目佣金待统一接入；暂用妙手 ERP 的 6.8% 作推荐值
-        shipping: { zones: [
-          { name: '马尼拉', firstG: 10, firstPrice: 10.5, addPrice: 4.50, buyerPays: 40.00 },
-          { name: '其他区', firstG: 10, firstPrice: 10.5, addPrice: 4.50, buyerPays: 60.00 },
+        shipping: { zones: [   // 2026-09-10 按价卡校准：起价 10.5 → 4.5（300g→₱135 验证吻合）
+          { name: '马尼拉', firstG: 10, firstPrice: 4.50, addPrice: 4.50, buyerPays: 40.00 },
+          { name: '其他区', firstG: 10, firstPrice: 4.50, addPrice: 4.50, buyerPays: 60.00 },
         ] } },
 
   SG: { name: '新加坡', cnyName: '新加坡元', currency: 'SGD', symbol: 'S$', fxToCNY: 5.60,
@@ -2085,8 +2089,8 @@ const SEA_SITES = {
         ],
         cats: CAT_TREE,
         comm: { def: 0.063, cat: {} },   // 新加坡：Marketplace 5.45–7.085% 取中位 6.3% 推荐
-        shipping: { zones: [
-          { name: '全境', firstG: 40, firstPrice: 0.98, addPrice: 0.15, buyerPays: 0 },
+        shipping: { zones: [   // 2026-09-10 按价卡校准：起重 50g / 起价 0.7 / 尾程买家付 0.8（300g→S$4.45 验证吻合）
+          { name: '全境', firstG: 50, firstPrice: 0.70, addPrice: 0.15, buyerPays: 0.80 },
         ] } },
 };
 
@@ -2108,7 +2112,15 @@ const DEMO         = { site: 'MY', price: 1200, weight: 650, cny: 150, forwarder
 const LS_KEY = 'tksea.mvp.v5';
 const LS_DEV = 'tksea.device.v1';
 
+/* ===== 环境模式 =====
+   正式环境（GitHub Pages，域名含 github.io）：仅开放已校验站点 —— 马来 / 菲律宾（跨境店），
+   其余站点在站点选择面板中标注「开发中」，点击弹出提示，不可切换；
+   开发环境（WorkBuddy 沙箱 / 本地 file:// / localhost）：全部站点可用。 */
+const IS_PROD = typeof location !== 'undefined' && location.hostname.indexOf('github.io') >= 0;
+const LIVE_SITES = ['MY', 'PH'];
+
 let state = load();
+if (IS_PROD && LIVE_SITES.indexOf(state.input.site) < 0) state.input.site = 'MY';   // 正式环境兜底回马来
 
 /* 设备标识：localStorage 持久化（“记住该设备”），供类目/输入记忆与后续接 API 用 */
 function deviceId() {
@@ -3041,16 +3053,24 @@ function renderRegionBar() {
   box.innerHTML = '';
   SITE_ORDER.forEach((code) => {
     const c = SEA_SITES[code];
+    const wip = IS_PROD && LIVE_SITES.indexOf(code) < 0;   // 正式环境下未上线站点 → 标注「开发中」
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'region-opt' + (code === state.input.site ? ' on' : '');
+    b.className = 'region-opt' + (code === state.input.site ? ' on' : '') + (wip ? ' wip' : '');
     b.setAttribute('role', 'option');
     b.setAttribute('aria-selected', String(code === state.input.site));
     b.innerHTML = '<span class="ro-badge">' + c.symbol + '</span>' +
                   '<span class="ro-name">' + c.name + '</span>' +
-                  '<span class="ro-sub">' + c.currency + ' · ' + c.cnyName + '</span>' +
+                  '<span class="ro-sub">' + c.currency + ' · ' + c.cnyName + (wip ? ' · <b>开发中</b>' : '') + '</span>' +
                   '<span class="ro-check">' + (code === state.input.site ? '✓' : '') + '</span>';
-    b.addEventListener('click', () => { switchSite(code); closeRegion(); });
+    if (wip) {
+      /* 未上线站点：点击弹提示，不切换 */
+      b.addEventListener('click', () => openFeeTip(
+        c.name + ' 站点 · 开发中',
+        '该地区的费率与运价数据正在开发校验中，暂时无法使用。\n\n目前已上线站点：马来、菲律宾（跨境店）。'));
+    } else {
+      b.addEventListener('click', () => { switchSite(code); closeRegion(); });
+    }
     box.appendChild(b);
   });
 }
