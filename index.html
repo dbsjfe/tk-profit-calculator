@@ -808,8 +808,13 @@ body.m-tip #tipSheet { display: block; }
   }
   body.m-result #chipBar {
     position: sticky; top: 0; z-index: 60;
-    background: var(--bg);
-    margin: -2px -12px 12px; padding: 8px 12px 10px;
+    /* 吸顶美化：磨砂玻璃 + 底部柔影，替代原纯色背景 */
+    background: rgba(237, 240, 244, .88);
+    -webkit-backdrop-filter: saturate(1.5) blur(12px);
+    backdrop-filter: saturate(1.5) blur(12px);
+    margin: -2px -12px 12px; padding: 10px 12px;
+    box-shadow: 0 10px 22px -16px rgba(16, 26, 38, .45);
+    border-bottom: 1px solid rgba(16, 26, 38, .05);
   }
 
   /* ===== 配置项折叠（移动端默认收起） ===== */
@@ -945,7 +950,9 @@ body.m-tip #tipSheet { display: block; }
   .chip-bar { margin: -2px 0 14px; }
   .chip-btn {
     width: 100%; display: flex; align-items: center; gap: 6px;
-    background: var(--primary-soft); border: 1.5px solid #D3DFEC; border-radius: 14px;
+    background: #fff; border: 1px solid rgba(16, 26, 38, .08);
+    box-shadow: 0 4px 14px -10px rgba(16, 26, 38, .3);
+    border-radius: 12px;
     padding: 9px 10px; cursor: pointer; font-family: inherit; text-align: left;
     overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
@@ -1061,6 +1068,65 @@ body.m-tip #tipSheet { display: block; }
   * { transition: none !important; animation: none !important; }
 }
 
+/* ===== AI 机器狗助手（结果页底部悬浮，【再算一次】旁） ===== */
+#floatProfit .fp-reset-row {
+  align-self: flex-end; display: flex; align-items: flex-end; gap: 12px;
+  margin: 0 20px 8px;
+}
+#floatProfit .fp-reset-row .fp-reset { margin: 0; }
+.fp-dog {
+  position: relative; width: 46px; height: 50px; cursor: pointer;
+  display: flex; align-items: flex-end; justify-content: center;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.fp-dog .dog-svg {
+  width: 40px; height: 40px;
+  filter: drop-shadow(0 3px 7px rgba(16, 26, 38, .28));
+  transition: transform .15s;
+}
+.fp-dog:hover .dog-svg { transform: translateY(-2px); }
+.fp-dog.hop .dog-svg { animation: dog-hop .6s ease; }
+@keyframes dog-hop {
+  0%   { transform: translateY(0) rotate(0); }
+  30%  { transform: translateY(-11px) rotate(-7deg); }
+  60%  { transform: translateY(0) rotate(4deg); }
+  80%  { transform: translateY(-3px) rotate(0); }
+  100% { transform: translateY(0); }
+}
+.dog-tail { transform-origin: 36px 28px; animation: dog-wag 1.5s ease-in-out infinite; }
+@keyframes dog-wag { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(24deg); } }
+.dog-eye { animation: dog-blink 4.2s infinite; }
+@keyframes dog-blink { 0%, 91%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.12); } }
+.dog-ear-tip { animation: dog-glow 2.2s ease-in-out infinite; }
+@keyframes dog-glow { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.dog-bubble {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+  min-width: 150px; max-width: 220px; padding: 9px 12px;
+  background: #16283E; color: #fff; font-size: 12px; line-height: 1.55; font-weight: 600;
+  border-radius: 12px; white-space: pre-line; text-align: left;
+  box-shadow: 0 10px 24px -10px rgba(16, 26, 38, .55);
+  z-index: 30;
+}
+.dog-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -4px;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px; height: 10px; background: #16283E; border-radius: 2px;
+}
+.dog-bubble[hidden] { display: none; }
+
+/* ===== 庆祝彩带（利润转正时触发一次） ===== */
+.confetti-box {
+  position: fixed; inset: 0; pointer-events: none; z-index: 999; overflow: hidden;
+}
+.confetti-box i {
+  position: absolute; top: -16px; width: 8px; height: 14px;
+  opacity: .95; border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  to { transform: translateY(108vh) rotate(560deg); }
+}
+
 </style>
 </head>
 <body>
@@ -1096,6 +1162,15 @@ body.m-tip #tipSheet { display: block; }
       <svg class="ss-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm9 3.4c0-.46-.04-.92-.13-1.36l2.06-1.61-1.9-3.26-2.46 1.01a7.9 7.9 0 0 0-2.34-1.35L15.7 2.2h-3.8l-.53 2.82a7.9 7.9 0 0 0-2.34 1.35l-2.46-1-1.9 3.25 2.06 1.6a8 8 0 0 0 0 2.72l-2.06 1.6 1.9 3.26 2.46-1a7.9 7.9 0 0 0 2.34 1.36l.53 2.81h3.8l.53-2.81a7.9 7.9 0 0 0 2.34-1.36l2.46 1 1.9-3.25-2.06-1.61c.09-.44.13-.9.13-1.36z" fill="currentColor"/></svg>
       <span>店铺设置</span>
     </button>
+  </div>
+
+  <!-- 结果页头部横幅：深色渐变卡 + 站点徽章（位于类目模块上方；移动端结果视图 / 桌面端显示） -->
+  <div class="result-hero" aria-hidden="true">
+    <div class="rh-l">
+      <span class="rh-title">利润计算结果</span>
+      <span class="rh-sub" id="rhSub">马来 · MYR · 跨境店</span>
+    </div>
+    <span class="rh-badge" id="rhBadge">MY</span>
   </div>
 
   <!-- 类目标题行（框外，加粗） -->
@@ -1273,14 +1348,6 @@ body.m-tip #tipSheet { display: block; }
 
     <!-- ===== 结果面板 ===== -->
     <section class="card panel panel-result" aria-label="利润明细">
-      <!-- 结果页头部横幅：深色渐变卡 + 站点徽章（与首页区分的高级装饰） -->
-      <div class="result-hero" aria-hidden="true">
-        <div class="rh-l">
-          <span class="rh-title">利润计算结果</span>
-          <span class="rh-sub" id="rhSub">马来 · MYR · 跨境店</span>
-        </div>
-        <span class="rh-badge" id="rhBadge">MY</span>
-      </div>
       <!-- 移动端「结果视图」顶部：已填信息摘要条（点击弹出编辑层） -->
       <div class="chip-bar" id="chipBar" hidden>
         <button type="button" class="chip-btn" id="chipEditBtn" aria-label="点击修改已填信息">
@@ -1451,9 +1518,35 @@ body.m-tip #tipSheet { display: block; }
   </div>
 </div>
 
-<!-- 移动端「结果视图」底部悬浮：小按钮【再算一次】+ 预估利润条（含利润率 / ROI） -->
+<!-- 移动端「结果视图」底部悬浮：AI 机器狗 + 小按钮【再算一次】+ 预估利润条（含利润率 / ROI） -->
 <div class="float-profit" id="floatProfit" hidden>
+  <div class="fp-reset-row">
+  <!-- AI 机器狗助手：点击互动（跳跃 + 按利润状态给提示） -->
+  <div class="fp-dog" id="fpDog" role="button" tabindex="0" aria-label="AI 助手机器狗，点击互动">
+    <svg class="dog-svg" viewBox="0 0 48 48" aria-hidden="true">
+      <!-- 身体 -->
+      <rect x="10" y="26" width="26" height="12" rx="6" fill="#EDF2F7"/>
+      <rect x="13" y="37" width="5" height="6" rx="2.2" fill="#C9D4E0"/>
+      <rect x="28" y="37" width="5" height="6" rx="2.2" fill="#C9D4E0"/>
+      <!-- 尾巴 -->
+      <path class="dog-tail" d="M36 28 q7 -2 6 -9" stroke="#EDF2F7" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- 头 -->
+      <rect x="24" y="12" width="17" height="14" rx="6" fill="#F7FAFD"/>
+      <!-- 耳朵（天线） -->
+      <path class="dog-ear" d="M27 12 v-5" stroke="#4D7CFE" stroke-width="3" stroke-linecap="round"/>
+      <circle class="dog-ear-tip" cx="27" cy="5.5" r="2.4" fill="#25F4EE"/>
+      <!-- 眼睛 -->
+      <circle class="dog-eye" cx="31" cy="18" r="2.1" fill="#16283E"/>
+      <circle class="dog-eye dog-eye2" cx="37.5" cy="18" r="2.1" fill="#16283E"/>
+      <!-- 鼻/嘴 -->
+      <rect x="33" y="22.5" width="4.5" height="2.2" rx="1.1" fill="#FE2C55"/>
+      <!-- 胸前logo点 -->
+      <circle cx="18" cy="32" r="2.2" fill="#25F4EE"/>
+    </svg>
+    <span class="dog-bubble" id="dogBubble" hidden></span>
+  </div>
   <button type="button" class="fp-reset" id="fpReBtn" aria-label="再算一次订单">再算一次</button>
+  </div>
   <button type="button" class="fp-btn" id="fpEditBtn" aria-label="预估利润，点击修改订单">
     <span class="fp-main">
       <span class="fp-tag">预估利润</span>
@@ -3046,6 +3139,20 @@ function render() {
   $('fpRate').textContent = (marginPct < -0.005 ? '−' : '') + fmt(mAbs, 2) + '%';
   if (price <= 0) fp.classList.add('zero');
   else if (R.profitLocal < -0.005) fp.classList.add('negative');
+
+  /* 利润状态追踪：由亏转赚 → 彩带庆祝；转亏 → 机器狗提醒调价（每次状态变化只触发一次） */
+  window.__lastProfit = R.profitCny;
+  const pState = price <= 0 ? 'zero'
+    : (R.profitLocal > 0.005 ? 'win' : (R.profitLocal < -0.005 ? 'lose' : 'zero'));
+  if (pState !== window.__profitState) {
+    if (pState === 'win' && document.body.classList.contains('m-result') &&
+        !document.body.classList.contains('m-edit')) launchConfetti();
+    if (pState === 'lose' && window.__dogSay) {
+      window.__dogSay('汪…目前是亏损的，建议调高售价或压缩成本！');
+    }
+    window.__profitState = pState;
+  }
+
   updateChips();
   renderCatBar();
 
@@ -3165,6 +3272,25 @@ function switchSite(code) {
   state.zoneIdx = 0;
   buildSites();
   render();
+}
+
+/* 庆祝彩带：利润转正时全屏撒一次（状态由亏/零 → 赚触发） */
+function launchConfetti() {
+  const colors = ['#25F4EE', '#FE2C55', '#FFD166', '#5B8DEF', '#B14AED', '#34C759'];
+  const box = document.createElement('div');
+  box.className = 'confetti-box';
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('i');
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.background = colors[i % colors.length];
+    p.style.animationDelay = (Math.random() * 0.5) + 's';
+    p.style.animationDuration = (1.6 + Math.random() * 1.3) + 's';
+    p.style.transform = 'rotate(' + Math.floor(Math.random() * 360) + 'deg)';
+    if (Math.random() > 0.55) { p.style.borderRadius = '50%'; p.style.height = '8px'; }
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3400);
 }
 
 /* ===== 事件 ===== */
@@ -3540,7 +3666,36 @@ function bind() {
   $('mResetTopBtn').addEventListener('click', () => { clearInputs(); setView('m-fill'); });
   $('chipEditBtn').addEventListener('click', openEdit);        // 顶部摘要条
   $('fpEditBtn').addEventListener('click', openEdit);          // 底部悬浮利润条
-  if ($('fpReBtn')) $('fpReBtn').addEventListener('click', openEdit);   // 小按钮【重新修改】
+  if ($('fpReBtn')) $('fpReBtn').addEventListener('click', openEdit);   // 小按钮【再算一次】
+
+  /* AI 机器狗：点击互动（跳跃动画 + 按利润状态随机说话） */
+  const dog = $('fpDog'), dogBubble = $('dogBubble');
+  if (dog && dogBubble) {
+    let dogT = null;
+    const dogSay = (txt) => {
+      dogBubble.textContent = txt;
+      dogBubble.hidden = false;
+      dog.classList.remove('hop');
+      void dog.offsetWidth;                       // 强制重排以重启动画
+      dog.classList.add('hop');
+      clearTimeout(dogT);
+      dogT = setTimeout(() => { dogBubble.hidden = true; dog.classList.remove('hop'); }, 3400);
+    };
+    window.__dogSay = dogSay;                     // 供「转亏提醒」调用
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const dogTalk = () => {
+      const p = window.__lastProfit;
+      if (!isFinite(p) || Math.abs(p) < 0.005) {
+        dogSay(pick(['汪？先把售价和成本填好吧！', '汪～数据填完我就能帮你算啦！']));
+      } else if (p > 0) {
+        dogSay(pick(['汪！这单稳赚，继续保持 🎉', '汪汪！利润不错，可以考虑加大推广～', '汪！这个定价很健康！']));
+      } else {
+        dogSay(pick(['汪…亏了，试试调高售价？', '汪！成本压一压，或者换个定价策略～', '汪…这个价格卖是要亏的，快改改！']));
+      }
+    };
+    dog.addEventListener('click', dogTalk);
+    dog.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') dogTalk(); });
+  }
   $('editBackBtn').addEventListener('click', closeEdit);       // 编辑层「返回利润」
   $('editResetBtn').addEventListener('click', () => { clearInputs(); setView('m-fill'); });
   /* 配置项折叠（移动端可点；桌面形态是静态小标题） */
