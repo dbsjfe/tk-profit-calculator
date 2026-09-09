@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>运营工作台 · TK 东南亚利润计算器</title>
+<style>
+:root {
+  --bg: #EDF0F4; --card: #FFFFFF; --ink: #17283B; --ink-2: #5A6C80; --ink-3: #8A99AA;
+  --line: #E3E8EE; --primary: #16324F; --primary-soft: #E9F0F7;
+  --good: #1F8A5B; --bad: #C0392B; --gold: #B08A2E;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg); color: var(--ink); line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 60px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--gold); margin-bottom: 6px; }
+h1 { margin: 0 0 4px; font-size: 26px; }
+.sub { margin: 0 0 22px; color: var(--ink-2); font-size: 13.5px; }
+.sub b { color: var(--ink); }
+
+/* 统计卡片 */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 16px; box-shadow: 0 1px 2px rgba(22,50,79,.05), 0 10px 28px -18px rgba(22,50,79,.35);
+}
+.stat .k { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+.stat .v { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.stat .v small { font-size: 13px; font-weight: 600; color: var(--ink-3); margin-left: 4px; }
+
+/* 区块 */
+.block {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(22,50,79,.05), 0 10px 28px -18px rgba(22,50,79,.35);
+}
+.block h2 { margin: 0 0 14px; font-size: 15px; }
+.block h2 small { font-weight: 500; color: var(--ink-3); font-size: 12px; margin-left: 6px; }
+
+/* 14 天趋势条形图（纯 CSS） */
+.trend { display: flex; align-items: flex-end; gap: 6px; height: 130px; }
+.trend .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
+.trend .bars { display: flex; align-items: flex-end; gap: 2px; width: 100%; justify-content: center; height: 100px; }
+.trend .b-pv { width: 9px; background: linear-gradient(180deg, #1E5C8C, #16324F); border-radius: 3px 3px 0 0; min-height: 2px; }
+.trend .b-calc { width: 9px; background: linear-gradient(180deg, #FFD166, #B08A2E); border-radius: 3px 3px 0 0; min-height: 2px; }
+.trend .d { font-size: 9.5px; color: var(--ink-3); white-space: nowrap; }
+.trend-legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11.5px; color: var(--ink-2); }
+.trend-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; }
+
+/* 站点分布 */
+.site-rows { display: flex; flex-direction: column; gap: 8px; }
+.site-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.site-row .n { width: 52px; font-weight: 700; }
+.site-row .track { flex: 1; height: 14px; background: var(--primary-soft); border-radius: 7px; overflow: hidden; }
+.site-row .fill { height: 100%; background: linear-gradient(90deg, #1E5C8C, #25F4EE); border-radius: 7px; }
+.site-row .c { width: 60px; text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* 反馈列表 */
+.fb-item {
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+}
+.fb-item .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.fb-item .time { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.badge {
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  background: var(--primary-soft); color: var(--primary);
+}
+.fb-item .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.tag { font-size: 11px; font-weight: 600; color: var(--bad); background: #FBEDEB; border-radius: 999px; padding: 2px 8px; }
+.fb-item .txt { font-size: 13px; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+.fb-item .del {
+  margin-left: auto; border: 0; background: transparent; color: var(--ink-3);
+  font-size: 12px; cursor: pointer; font-family: inherit; padding: 2px 6px;
+}
+.fb-item .del:hover { color: var(--bad); }
+.empty { color: var(--ink-3); font-size: 13px; text-align: center; padding: 20px 0; }
+
+/* 工具条 */
+.tools { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.tbtn {
+  font-family: inherit; cursor: pointer; font-size: 12.5px; font-weight: 700;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--primary);
+  border-radius: 999px; padding: 7px 14px;
+}
+.tbtn.danger { color: var(--bad); border-color: #E8C5C0; }
+.back { display: inline-block; margin-bottom: 18px; color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none; }
+.top-tools { display: flex; justify-content: space-between; align-items: center; }
+
+/* 登录门 */
+.login-mask {
+  position: fixed; inset: 0; z-index: 999;
+  background:
+    radial-gradient(800px 380px at 85% -10%, #E3EBF4 0%, rgba(227,235,244,0) 70%),
+    var(--bg);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.login-mask[hidden] { display: none; }
+.login-card {
+  width: 100%; max-width: 340px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 18px; padding: 26px 24px;
+  box-shadow: 0 1px 2px rgba(22,50,79,.05), 0 18px 44px -22px rgba(22,50,79,.45);
+  text-align: center;
+}
+.login-card h1 { font-size: 21px; margin: 2px 0 6px; }
+.login-tip { margin: 0 0 16px; font-size: 12.5px; color: var(--ink-3); }
+.login-card input {
+  width: 100%; font-family: inherit; font-size: 16px; text-align: center; letter-spacing: .2em;
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; outline: none;
+}
+.login-card input:focus { border-color: var(--primary); }
+.login-err { color: var(--bad); font-size: 12.5px; font-weight: 600; margin: 10px 0 0; }
+.login-btn { margin-top: 14px; width: 100%; min-height: 44px; font-size: 14.5px; }
+#app[hidden] { display: none; }
+</style>
+</head>
+<body>
+<!-- 登录门：仅站长可访问（密码改下方脚本里的 ADMIN_PASSWORD） -->
+<div class="login-mask" id="loginMask" hidden>
+  <div class="login-card">
+    <div class="eyebrow">TK 东南亚利润计算器 · 后台</div>
+    <h1>运营工作台</h1>
+    <p class="login-tip">仅站长可访问，请输入访问密码</p>
+    <input type="password" id="pwdInput" placeholder="访问密码" autocomplete="current-password">
+    <p class="login-err" id="pwdErr" hidden>密码不对，再试试</p>
+    <button class="tbtn login-btn" id="pwdBtn" type="button">进入工作台</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="top-tools">
+    <a class="back" href="index.html">‹ 返回计算器</a>
+    <button class="tbtn" id="logoutBtn" type="button">退出登录</button>
+  </div>
+  <div class="eyebrow">TK 东南亚利润计算器 · 后台</div>
+  <h1>运营工作台</h1>
+  <p class="sub">数据来源：用户浏览器 localStorage（<b>同域同设备</b>）。轻量版先跑着，后续接服务端可升级为全设备汇总。</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="k">今日访问 PV</div><div class="v" id="stPv">0</div></div>
+    <div class="stat"><div class="k">今日计算次数</div><div class="v" id="stCalc">0</div></div>
+    <div class="stat"><div class="k">今日反馈</div><div class="v" id="stFb">0</div></div>
+    <div class="stat"><div class="k">累计反馈</div><div class="v" id="stFbAll">0<small>条</small></div></div>
+  </div>
+
+  <div class="block">
+    <h2>近 14 天趋势</h2>
+    <div class="trend" id="trend"></div>
+    <div class="trend-legend">
+      <span><i style="background:#16324F"></i>访问 PV</span>
+      <span><i style="background:#B08A2E"></i>计算次数</span>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>今日站点分布</h2>
+    <div class="site-rows" id="siteRows"></div>
+  </div>
+
+  <div class="block">
+    <h2>反馈列表 <small id="fbCount"></small></h2>
+    <div id="fbList"></div>
+    <div class="tools">
+      <button class="tbtn" id="expJson" type="button">导出 JSON</button>
+      <button class="tbtn" id="expCsv" type="button">导出 CSV</button>
+      <button class="tbtn danger" id="clearFb" type="button">清空反馈</button>
+      <button class="tbtn danger" id="clearStat" type="button">清空统计</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_STAT = 'tksea.stat.v1';
+const LS_FB = 'tksea.fb.v1';
+const LS_ADMIN_AUTH = 'tksea.admin.auth.v1';   // 登录态：{ t: 通过时间戳 }，30 天内免输密码
+/* ★ 访问密码：改这里即可（前端校验，轻量防护；要更安全后续换服务端） */
+const ADMIN_PASSWORD = 'tk2026';
+
+/* ===== 登录门 ===== */
+(function initAuth() {
+  const mask = document.getElementById('loginMask');
+  const app = document.getElementById('app');
+  const input = document.getElementById('pwdInput');
+  const err = document.getElementById('pwdErr');
+  function pass() {
+    mask.hidden = true;
+    app.hidden = false;
+    try { localStorage.setItem(LS_ADMIN_AUTH, JSON.stringify({ t: Date.now() })); } catch (e) {}
+  }
+  function fail() { err.hidden = false; input.value = ''; input.focus(); }
+  function tryLogin() {
+    if (input.value === ADMIN_PASSWORD) pass(); else fail();
+  }
+  function authValid() {
+    try {
+      const a = JSON.parse(localStorage.getItem(LS_ADMIN_AUTH) || 'null');
+      return !!(a && a.t && Date.now() - a.t < 30 * 864e5);
+    } catch (e) { return false; }
+  }
+  document.getElementById('pwdBtn').addEventListener('click', tryLogin);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    try { localStorage.removeItem(LS_ADMIN_AUTH); } catch (e) {}
+    app.hidden = true; mask.hidden = false; err.hidden = true; input.value = '';
+  });
+  if (authValid()) { pass(); } else { mask.hidden = false; input.focus(); }
+})();
+
+const SITES = { MY: '马来', PH: '菲律宾', TH: '泰国', VN: '越南', SG: '新加坡', ID: '印尼' };
+
+function readJSON(key, def) {
+  try { return JSON.parse(localStorage.getItem(key) || def); } catch (e) { return JSON.parse(def); }
+}
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fmtTime(ts) {
+  const d = new Date(ts);
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+function renderStats() {
+  const stat = readJSON(LS_STAT, '{}');
+  const days = stat.days || {};
+  const today = days[todayKey()] || { pv: 0, calc: 0, fb: 0, sites: {} };
+  document.getElementById('stPv').textContent = today.pv;
+  document.getElementById('stCalc').textContent = today.calc;
+  document.getElementById('stFb').textContent = today.fb;
+
+  const fb = readJSON(LS_FB, '[]');
+  document.getElementById('stFbAll').innerHTML = fb.length + '<small>条</small>';
+  document.getElementById('fbCount').textContent = fb.length ? '共 ' + fb.length + ' 条' : '';
+
+  /* 近 14 天趋势 */
+  const keys = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const p = (n) => String(n).padStart(2, '0');
+    keys.push(d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()));
+  }
+  const maxV = Math.max(1, ...keys.map((k) => Math.max((days[k] || {}).pv || 0, (days[k] || {}).calc || 0)));
+  document.getElementById('trend').innerHTML = keys.map((k) => {
+    const day = days[k] || {};
+    const pvH = Math.round(((day.pv || 0) / maxV) * 100);
+    const calcH = Math.round(((day.calc || 0) / maxV) * 100);
+    return '<div class="col">'
+      + '<div class="bars">'
+      + '<div class="b-pv" style="height:' + Math.max(pvH, 2) + '%" title="' + k + ' PV ' + (day.pv || 0) + '"></div>'
+      + '<div class="b-calc" style="height:' + Math.max(calcH, 2) + '%" title="' + k + ' 计算 ' + (day.calc || 0) + '"></div>'
+      + '</div>'
+      + '<div class="d">' + k.slice(5) + '</div>'
+      + '</div>';
+  }).join('');
+
+  /* 今日站点分布 */
+  const sites = today.sites || {};
+  const siteKeys = Object.keys(sites).sort((a, b) => sites[b] - sites[a]);
+  const maxS = Math.max(1, ...siteKeys.map((k) => sites[k]));
+  document.getElementById('siteRows').innerHTML = siteKeys.length
+    ? siteKeys.map((k) =>
+        '<div class="site-row"><span class="n">' + (SITES[k] || k) + '</span>'
+        + '<span class="track"><span class="fill" style="width:' + Math.round((sites[k] / maxS) * 100) + '%"></span></span>'
+        + '<span class="c">' + sites[k] + ' 次</span></div>').join('')
+    : '<div class="empty">今天还没有数据</div>';
+}
+
+function renderFeedback() {
+  const fb = readJSON(LS_FB, '[]');
+  const box = document.getElementById('fbList');
+  if (!fb.length) { box.innerHTML = '<div class="empty">还没有收到反馈</div>'; return; }
+  box.innerHTML = fb.map((e, i) =>
+    '<div class="fb-item">'
+    + '<div class="head">'
+    + '<span class="time">' + fmtTime(e.t) + '</span>'
+    + '<span class="badge">' + (e.siteName || e.site || '—') + '</span>'
+    + (e.price ? '<span class="badge">售价 ' + e.price + '</span>' : '')
+    + '<button class="del" data-i="' + i + '" type="button">删除</button>'
+    + '</div>'
+    + ((e.items && e.items.length) ? '<div class="tags">' + e.items.map((t) => '<span class="tag">' + t + '</span>').join('') + '</div>' : '')
+    + (e.text ? '<div class="txt">' + e.text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' : '')
+    + '</div>').join('');
+  box.querySelectorAll('.del').forEach((b) => {
+    b.addEventListener('click', () => {
+      const list = readJSON(LS_FB, '[]');
+      list.splice(parseInt(b.getAttribute('data-i'), 10), 1);
+      localStorage.setItem(LS_FB, JSON.stringify(list));
+      renderAll();
+    });
+  });
+}
+
+function renderAll() { renderStats(); renderFeedback(); }
+
+/* 导出 */
+function download(name, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 800);
+}
+document.getElementById('expJson').addEventListener('click', () => {
+  download('feedback-' + todayKey() + '.json', localStorage.getItem(LS_FB) || '[]', 'application/json');
+});
+document.getElementById('expCsv').addEventListener('click', () => {
+  const fb = readJSON(LS_FB, '[]');
+  const esc = (s) => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+  const rows = [['时间', '站点', '售价', '算错的费用项', '补充说明'].join(',')];
+  fb.forEach((e) => rows.push([
+    esc(fmtTime(e.t)), esc(e.siteName || e.site || ''), esc(e.price || ''),
+    esc((e.items || []).join(' / ')), esc(e.text || ''),
+  ].join(',')));
+  download('feedback-' + todayKey() + '.csv', '\uFEFF' + rows.join('\n'), 'text/csv');
+});
+document.getElementById('clearFb').addEventListener('click', () => {
+  if (!confirm('确定清空全部反馈？不可恢复！')) return;
+  localStorage.removeItem(LS_FB); renderAll();
+});
+document.getElementById('clearStat').addEventListener('click', () => {
+  if (!confirm('确定清空全部统计数据？不可恢复！')) return;
+  localStorage.removeItem(LS_STAT); renderAll();
+});
+
+renderAll();
+</script>
+</body>
+</html>
